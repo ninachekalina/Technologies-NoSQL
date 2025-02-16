@@ -1,29 +1,33 @@
-name: Test Cassandra with Python
+name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
     services:
       cassandra:
         image: cassandra:4.0
         ports:
           - 9042:9042
-        options: >-
-          --health-cmd="cqlsh -e 'DESCRIBE KEYSPACES'" --health-interval=10s --health-timeout=5s --health-retries=10
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout репозитория
+        uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Устанавливаем зависимости
         run: |
-          sudo apt-get install -y python3-pip
+          sudo apt update
+          sudo apt install -y python3-pip
           pip install cassandra-driver pytest
 
-      - name: Wait for Cassandra to be ready
+      - name: Ожидаем запуск Cassandra
         run: |
           for i in {1..30}; do
             if docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "DESCRIBE KEYSPACES"; then
@@ -33,13 +37,28 @@ jobs:
             echo "Waiting for Cassandra..."
             sleep 5
           done
-          echo "Cassandra did not start in time!" && exit 1
+          echo "Cassandra did not start in time!"
+          exit 1
 
-      - name: Copy schema.cql into Cassandra container
-        run: docker cp schema.cql $(docker ps -q -f ancestor=cassandra:4.0):/schema.cql
+      - name: Копируем файлы внутрь контейнера
+        run: |
+          CONTAINER_ID=$(docker ps -q -f ancestor=cassandra:4.0)
+          docker cp schema.cql $CONTAINER_ID:/schema.cql
+          docker cp test.py $CONTAINER_ID:/test.py  # Копируем test.py
 
-      - name: Create keyspace and tables
+      - name: Проверяем, загружены ли файлы в контейнер
+        run: |
+          CONTAINER_ID=$(docker ps -q -f ancestor=cassandra:4.0)
+          docker exec $CONTAINER_ID ls -lah /
+
+      - name: Ждем 10 секунд перед выполнением schema.cql
+        run: sleep 10
+
+      - name: Применяем schema.cql
         run: docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -f /schema.cql
 
-      - name: Run tests
+      - name: Проверяем, загружен ли my_keyspace
+        run: docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "DESCRIBE KEYSPACES"
+
+      - name: Запускаем тесты
         run: pytest test.py
