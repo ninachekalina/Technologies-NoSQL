@@ -1,0 +1,46 @@
+name: Cassandra CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      cassandra:
+        image: cassandra:4.0
+        ports:
+          - 9042:9042
+        options: >-
+          --health-cmd "cqlsh -e 'SELECT release_version FROM system.local'" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: sudo apt update && sudo apt install -y cassandra-tools python3-pip
+
+      - name: Install Python Cassandra Driver
+        run: pip install cassandra-driver
+
+      - name: Wait for Cassandra to be ready
+        run: |
+          for i in {1..10}; do
+            if cqlsh -e "SELECT release_version FROM system.local"; then
+              echo "✅ Cassandra запущена!"
+              exit 0
+            fi
+            echo "⏳ Ожидание Cassandra..."
+            sleep 5
+          done
+          echo "❌ Ошибка: Cassandra не запустилась"
+          exit 1
+
+      - name: Apply Database Schema
+        run: cqlsh -f schema.cql
+
+      - name: Run Tests
+        run: python3 test.py
