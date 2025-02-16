@@ -35,8 +35,11 @@ jobs:
           done
           echo "Cassandra did not start in time!" && exit 1
 
+      - name: Copy schema.cql into Cassandra container
+        run: docker cp schema.cql $(docker ps -q -f ancestor=cassandra:4.0):/schema.cql
+
       - name: Create keyspace and tables
-        run: docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "SOURCE '/schema.cql'"
+        run: docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -f /schema.cql
 
       - name: Run tests
         run: pytest test.py
