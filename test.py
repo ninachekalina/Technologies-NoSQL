@@ -6,7 +6,8 @@ def test_insert_and_read():
     session = cluster.connect('test_keyspace')
 
     # Вставляем данные
-    session.execute("INSERT INTO users (id, name) VALUES (1, 'Ekaterina')")
+    session.execute("INSERT INTO users (id, name) VALUES (1, 'Ekaterina') USING CONSISTENCY QUORUM")
+
 
     # Проверяем, что запись вставлена
     rows = session.execute("SELECT id, name FROM users WHERE id = 1")
