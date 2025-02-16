@@ -1,12 +1,13 @@
 import uuid
 from cassandra.cluster import Cluster
+from cassandra import ConsistencyLevel
 
 def test_insert_and_read():
     cluster = Cluster(['localhost'])
     session = cluster.connect('test_keyspace')
+	session.default_consistency_level = ConsistencyLevel.QUORUM
+	session.execute("INSERT INTO users (id, name) VALUES (1, 'Ekaterina')")
 
-    # Вставляем данные
-    session.execute("INSERT INTO users (id, name) VALUES (1, 'Ekaterina') USING CONSISTENCY QUORUM")
 
 
     # Проверяем, что запись вставлена
