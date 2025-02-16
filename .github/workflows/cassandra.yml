@@ -1,0 +1,42 @@
+name: Test Cassandra with Python
+
+on: [push, pull_request]  # Запускать CI при коммите и PR
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      cassandra:
+        image: cassandra:4.0
+        ports:
+          - 9042:9042
+        options: >-
+          --health-cmd="cqlsh -e 'DESCRIBE KEYSPACES'" --health-interval=10s --health-timeout=5s --health-retries=5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -y python3-pip
+          pip install cassandra-driver pytest
+
+      - name: Wait for Cassandra to be ready
+        run: |
+          for i in {1..30}; do
+            if cqlsh -e "DESCRIBE KEYSPACES"; then
+              echo "Cassandra is ready!"
+              exit 0
+            fi
+            echo "Waiting for Cassandra..."
+            sleep 5
+          done
+          echo "Cassandra did not start in time!" && exit 1
+
+      - name: Create keyspace and tables
+        run: cqlsh -f schema.cql
+
+      - name: Run tests
+        run: pytest test.py
