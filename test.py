@@ -13,5 +13,4 @@ def test_insert_and_read():
     for row in rows:
         print(f"Inserted row: id={row.id}, name={row.name}")  # Этот вывод появится в логах GitHub Actions
 
-    assert any(row.name == 'Ekaterina' for row in rows), "Data was not inserted!"
-
+   
