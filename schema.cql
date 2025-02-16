@@ -4,7 +4,7 @@ WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
 USE test_keyspace;
 
 CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY,
+    id int PRIMARY KEY,
     name TEXT,
     age INT
 );
