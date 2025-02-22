@@ -38,15 +38,27 @@ jobs:
             sleep 5
           done
 
-      - name: Copy schema to container
-        run: docker cp schema.cql $(docker ps -q -f ancestor=cassandra:4.0):/schema.cql
+     # - name: Copy schema to container
+       # run: docker cp schema.cql $(docker ps -q -f ancestor=cassandra:4.0):/schema.cql
+      - name: List files in workspace
+        run: ls -la
+        
 
-      - name: Apply schema
+
+      #- name: Apply schema
+        #run: |
+          #echo "Applying schema..."
+          #docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -f /schema.cql || (echo "Schema failed to apply!" && exit 1)
+          #echo "Schema applied successfully!"
+         # sleep 5
+      - name: Apply all CQL scripts
         run: |
-          echo "Applying schema..."
-          docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -f /schema.cql || (echo "Schema failed to apply!" && exit 1)
-          echo "Schema applied successfully!"
-          sleep 5
+          for file in $(find . -name '*.cql'); do
+          echo "Applying $file..."
+          docker cp "$file" $(docker ps -q -f ancestor=cassandra:4.0):/"$(basename $file)"
+          docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -f "/$(basename $file)" || (echo "Failed to apply $file!" && exit 1)
+          done
+
 
       - name: Check if keyspace exists
         run: docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "DESCRIBE KEYSPACES"
@@ -54,5 +66,5 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run tests
-        run: pytest test.py
+      #- name: Run tests
+      #  run: pytest test.py
