@@ -38,13 +38,13 @@ jobs:
             sleep 5
           done
 
-           - name: Apply all CQL scripts
-              run: |
-                for file in $(find . -name '*.cql'); do
-                  echo "Applying $file..."
-                  docker cp "$file" $(docker ps -q -f ancestor=cassandra:4.0):/"$(basename $file)"
-                  docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -f "/$(basename $file)" || (echo "Failed to apply $file!" && exit 1)
-                done
+      - name: Apply all CQL scripts
+        run: |
+          for file in $(find . -name '*.cql'); do
+              echo "Applying $file..."
+              docker cp "$file" $(docker ps -q -f ancestor=cassandra:4.0):/"$(basename $file)"
+              docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -f "/$(basename $file)" || (echo "Failed to apply $file!" && exit 1)
+          done
 
 
 
