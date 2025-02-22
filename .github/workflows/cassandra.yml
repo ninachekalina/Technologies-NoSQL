@@ -38,25 +38,20 @@ jobs:
             sleep 5
           done
 
-     # - name: Copy schema to container
-       # run: docker cp schema.cql $(docker ps -q -f ancestor=cassandra:4.0):/schema.cql
-      - name: List files in workspace
-        run: ls -la
-        
+      - name: Copy schema to container
+        run: docker cp schema.cql $(docker ps -q -f ancestor=cassandra:4.0):/schema.cql
 
-
-      #- name: Apply schema
-        #run: |
-          #echo "Applying schema..."
-          #docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -f /schema.cql || (echo "Schema failed to apply!" && exit 1)
-          #echo "Schema applied successfully!"
-         # sleep 5
+      - name: Apply schema
+        run: |
+          echo "Applying schema..."
+          docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -f /schema.cql || (echo "Schema failed to apply!" && exit 1)
+          echo "Schema applied successfully!"
+          sleep 5
       - name: Apply all CQL scripts
         run: |
           for file in $(find . -name '*.cql'); do
-          echo "Applying $file..."
-          docker cp "$file" $(docker ps -q -f ancestor=cassandra:4.0):/"$(basename $file)"
-          docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -f "/$(basename $file)" || (echo "Failed to apply $file!" && exit 1)
+            echo "Applying $file..."
+            docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -f "$file" || (echo "Failed to apply $file!" && exit 1)
           done
 
 
@@ -66,5 +61,10 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      #- name: Run tests
-      #  run: pytest test.py
+      #- name: Insert test data
+        #run: |
+          #docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "INSERT INTO test_keyspace.users (id, name) VALUES (1, 'Ekaterina');"
+
+      - name: Fetch data from Cassandra
+        run: |
+          docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "SELECT * FROM test_keyspace.users;"
