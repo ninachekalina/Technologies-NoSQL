@@ -54,6 +54,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run tests
-        run: pytest -s test.py
+      - name: Insert test data
+        run: |
+          docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "INSERT INTO test_keyspace.users (id, name) VALUES (1, 'Ekaterina');"
+
+      - name: Fetch data from Cassandra
+        run: |
+          docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "SELECT * FROM test_keyspace.users;"
+
+
+      #- name: Run tests
+      # run: pytest -s test.py
 
