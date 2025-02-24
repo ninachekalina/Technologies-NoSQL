@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
       - name: Wait for Cassandra to be fully ready
         run: |
@@ -66,10 +68,6 @@ jobs:
       
       - name: List keyspaces after execution
         run: docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "DESCRIBE KEYSPACES"
-
-     
-      - name: Install dependencies
-        run: pip install -r requirements.txt
 
       #- name: Insert test data
         #run: |
