@@ -45,12 +45,17 @@ jobs:
               docker cp "$file" $(docker ps -q -f ancestor=cassandra:4.0):/"$(basename $file)"
               docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -f "/$(basename $file)" || (echo "Failed to apply $file!" && exit 1)
           done
+      - name: Verify keyspace and table
+        run: |
+          echo "Checking if keyspace 'company' exists..."
+          docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "DESCRIBE KEYSPACES" | grep -q company || (echo "Keyspace 'company' not found!" && exit 1)
+          
+          echo "Checking if table 'employees' exists..."
+          docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "DESCRIBE TABLES IN company" | grep -q employees || (echo "Table 'employees' not found!" && exit 1)
 
 
 
-      - name: Check if keyspace exists
-        run: docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "DESCRIBE KEYSPACES"
-
+     
       - name: Install dependencies
         run: pip install -r requirements.txt
 
@@ -61,8 +66,15 @@ jobs:
       - name: Fetch data from Cassandra
         run: |
           docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "SELECT * FROM test_keyspace.users;"
+<<<<<<< HEAD
+
+=======
+<<<<<<< HEAD
+=======
 
 
       #- name: Run tests
       # run: pytest -s test.py
 
+>>>>>>> main
+>>>>>>> 8fe9a20 (Добавлены company.cql)
