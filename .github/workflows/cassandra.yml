@@ -66,15 +66,9 @@ jobs:
       - name: Fetch data from Cassandra
         run: |
           docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "SELECT * FROM test_keyspace.users;"
-<<<<<<< HEAD
-
-=======
-<<<<<<< HEAD
-=======
 
 
-      #- name: Run tests
-      # run: pytest -s test.py
 
->>>>>>> main
->>>>>>> 8fe9a20 (Добавлены company.cql)
+      
+
+
