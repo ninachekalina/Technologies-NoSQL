@@ -73,7 +73,9 @@ jobs:
         run: docker exec cassandra_test  cqlsh -e "DESCRIBE KEYSPACES"
 
       - name: Check if table exists
-        run: docker exec cassandra_test cqlsh -e "DESCRIBE TABLES IN company;"
+        run: docker exec cassandra_test cqlsh -e "SELECT table_name FROM system_schema.tables WHERE keyspace_name = 'company';"
+
+
 
       - name: Apply vstavka.cql
         run: |
