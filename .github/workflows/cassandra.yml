@@ -1,4 +1,4 @@
-name: CI for Cassandra Tests
+name:  Cassandra Tests
 
 on:
   push:
@@ -90,6 +90,13 @@ jobs:
       #- name: Insert test data
         #run: |
           #docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "INSERT INTO test_keyspace.users (id, name) VALUES (1, 'Ekaterina');"
+      - name: Wait for data insertion
+        run: sleep 5  
+
+      - name: Apply upd.cql
+        run: |
+          docker cp upd.cql cassandra_test:/upd.cql
+          docker exec cassandra_test cqlsh -f /upd.cql || (echo "Failed to apply upd.cql!" && exit 1)
 
 
       - name: Fetch all employees
