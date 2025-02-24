@@ -72,6 +72,13 @@ jobs:
       - name: List keyspaces after execution
         run: docker exec cassandra_test  cqlsh -e "DESCRIBE KEYSPACES"
 
+      - name: Check if table exists
+        run: docker exec cassandra_test cqlsh -e "DESCRIBE TABLES IN company;"
+
+      - name: Apply vstavka.cql
+        run: |
+         docker exec cassandra_test cqlsh -f /vstavka.cql || (echo "Failed to apply vstavka.cql!" && exit 1)
+
       #- name: Insert test data
         #run: |
           #docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "INSERT INTO test_keyspace.users (id, name) VALUES (1, 'Ekaterina');"
