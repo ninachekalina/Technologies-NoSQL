@@ -77,7 +77,15 @@ jobs:
       #- name: Fetch data from Cassandra
        # run: |
         #  docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "SELECT * FROM test_keyspace.users;"
+      - name: Fetch all employees
+        run: |
+          echo "Fetching all employees..."
+          docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "SELECT * FROM company.employees;"
 
+      - name: Fetch employees with salary > 50000
+        run: |
+          echo "Fetching employees with salary > 50000..."
+          docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "SELECT * FROM company.employees WHERE salary > 50000.00 ALLOW FILTERING;"
 
 
       
