@@ -66,6 +66,7 @@ jobs:
             docker exec cassandra_test  cqlsh -f "/$(basename $file)" || (echo "Failed to apply $file!" && exit 1)
           done
 
+
       - name: List all CQL files
         run: ls -l *.cql
       
@@ -88,18 +89,7 @@ jobs:
         #run: |
           #docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "INSERT INTO test_keyspace.users (id, name) VALUES (1, 'Ekaterina');"
 
-      #- name: Verify keyspace and table
-       # run: |
-        #  echo "Checking if keyspace 'company' exists..."
-        #  docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "DESCRIBE KEYSPACES" | grep -q company || (echo "Keyspace 'company' not found!" && exit 1)
-          
-         # echo "Checking if table 'employees' exists..."
-          #docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "DESCRIBE TABLES IN company" | grep -q employees || (echo "Table 'employees' not found!" && exit 1)
 
-      
-      #- name: Fetch data from Cassandra
-       # run: |
-        #  docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "SELECT * FROM test_keyspace.users;"
       - name: Fetch all employees
         run: |
           echo "Fetching all employees..."
@@ -112,5 +102,6 @@ jobs:
 
 
       
+
 
 
