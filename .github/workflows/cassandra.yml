@@ -67,5 +67,3 @@ jobs:
         run: |
           docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "SELECT * FROM test_keyspace.users;"
 
-
-     
