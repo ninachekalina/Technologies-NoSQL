@@ -15,9 +15,12 @@ jobs:
     services:
       cassandra:
         image: cassandra:4.0
+        
+
         ports:
           - 9042:9042
         options: >-
+          --name cassandra_test
           --health-cmd "cqlsh -e 'DESCRIBE KEYSPACES'" 
           --health-interval 10s 
           --health-timeout 5s 
@@ -32,7 +35,7 @@ jobs:
       - name: Wait for Cassandra to be fully ready
         run: |
           for i in {1..30}; do
-            if docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "DESCRIBE KEYSPACES"; then
+            if docker exec cassandra_test  cqlsh -e "DESCRIBE KEYSPACES"; then
               echo "Cassandra is fully ready!"
               break
             fi
@@ -42,12 +45,12 @@ jobs:
 
       - name: Apply company.cql via echo
         run: |
-          docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "$(cat company.cql)"
+          docker exec cassandra_test  cqlsh -e "$(cat company.cql)"
 
       - name: Verify keyspace 'company' exists
         run: |
           for i in {1..10}; do
-            if docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "DESCRIBE KEYSPACES" | grep -q company; then
+            if docker exec cassandra_test  cqlsh -e "DESCRIBE KEYSPACES" | grep -q company; then
               echo "Keyspace 'company' is ready!"
               break
             fi
@@ -59,15 +62,15 @@ jobs:
         run: |
           for file in $(find . -name '*.cql' | grep -v 'company.cql'); do
             echo "Applying $file..."
-            docker cp "$file" $(docker ps -q -f ancestor=cassandra:4.0):/"$(basename $file)"
-            docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -f "/$(basename $file)" || (echo "Failed to apply $file!" && exit 1)
+            docker cp "$file" cassandra_test :/"$(basename $file)"
+            docker exec cassandra_test  cqlsh -f "/$(basename $file)" || (echo "Failed to apply $file!" && exit 1)
           done
 
       - name: List all CQL files
         run: ls -l *.cql
       
       - name: List keyspaces after execution
-        run: docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "DESCRIBE KEYSPACES"
+        run: docker exec cassandra_test  cqlsh -e "DESCRIBE KEYSPACES"
 
       #- name: Insert test data
         #run: |
@@ -88,12 +91,12 @@ jobs:
       - name: Fetch all employees
         run: |
           echo "Fetching all employees..."
-          docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "SELECT * FROM company.employees;"
+          docker exec cassandra_test  cqlsh -e "SELECT * FROM company.employees;"
 
       - name: Fetch employees with salary > 50000
         run: |
           echo "Fetching employees with salary > 50000..."
-          docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "SELECT * FROM company.employees WHERE salary > 50000.00 ALLOW FILTERING;"
+          docker exec cassandra_test  cqlsh -e "SELECT * FROM company.employees WHERE salary > 50000.00 ALLOW FILTERING;"
 
 
       
