@@ -1,4 +1,4 @@
-
+USE company;
 
 INSERT INTO company.employees (id, name, position, salary) 
 VALUES (uuid(), 'Ivan Nedovarov', 'Software Engineer', 70000.00);
