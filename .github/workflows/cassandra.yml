@@ -63,11 +63,7 @@ jobs:
 
       - name: List all CQL files
         run: ls -l *.cql
-      - name: Show company.cql content inside container
-        run: docker exec $(docker ps -q -f ancestor=cassandra:4.0) cat /company.cql
-      - name: Apply company.cql separately
-        run: |
-          docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -f /company.cql || (echo "Failed to apply company.cql!" && exit 1)
+      
       - name: List keyspaces after execution
         run: docker exec $(docker ps -q -f ancestor=cassandra:4.0) cqlsh -e "DESCRIBE KEYSPACES"
 
